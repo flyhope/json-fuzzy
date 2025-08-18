@@ -7,6 +7,15 @@ import (
 	"strings"
 )
 
+// FuzzyInt is a custom JSON unmarshaler for the int type that provides fuzzy decoding.
+// It can decode an int from JSON numbers, strings, booleans, and null.
+//
+// Behavior:
+//   - JSON numbers (e.g., 123, 45.67) are decoded as integers (floats are truncated).
+//   - JSON strings (e.g., "123", " 45.67 ") are parsed as integers after trimming whitespace (floats are truncated).
+//   - JSON booleans are decoded as 1 for true and 0 for false.
+//   - JSON null is decoded as 0.
+//   - Empty strings or strings with only whitespace are decoded as 0.
 func FuzzyInt(dec *jsontext.Decoder, t *int) error {
 	kind := dec.PeekKind()
 
