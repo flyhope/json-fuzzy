@@ -3,6 +3,9 @@ package jsonfuzzy
 import (
 	"encoding/json/jsontext"
 	"encoding/json/v2"
+	"sync"
+
+	"github.com/flyhope/json-fuzzy/fuzzy"
 )
 
 type JsonUnknow struct {
@@ -10,7 +13,7 @@ type JsonUnknow struct {
 }
 
 // Unmarshal unmarshals the JSON-encoded data in into out.
-// 默认自带兼容选项：允许重复键名、允许无效UTF-8
+// By default, it comes with compatibility options: AllowDuplicateNames, AllowInvalidUTF8.
 func Unmarshal(in []byte, out any, opts ...json.Options) error {
 	options := WithOptions(opts...)
 	return json.Unmarshal(in, out, options)
@@ -29,7 +32,7 @@ func MarshalString(in any, opts ...json.Options) (string, error) {
 	return string(data), err
 }
 
-// WithOptions 返回指定的选项（包含默认选项）。
+// WithOptions returns the specified options (including default options).
 func WithOptions(opts ...json.Options) json.Options {
 	options := DefaultOptions()
 	if len(opts) > 0 {
@@ -40,12 +43,12 @@ func WithOptions(opts ...json.Options) json.Options {
 	return options
 }
 
-// DefaultOptions 默认自带JSON兼容选项：允许重复键名、允许无效UTF-8
-func DefaultOptions() json.Options {
-	fuzzy := FuzzyUnmarshaler()
+// DefaultOptions returns the default options for fuzzy unmarshaling.
+var DefaultOptions = sync.OnceValue(func() json.Options {
+	fuzzy := fuzzy.FuzzyUnmarshaler()
 	return json.JoinOptions(
 		jsontext.AllowDuplicateNames(true),
 		jsontext.AllowInvalidUTF8(true),
 		json.WithUnmarshalers(fuzzy),
 	)
-}
+})
