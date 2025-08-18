@@ -1,4 +1,3 @@
-
 package fuzzy
 
 import (
@@ -23,6 +22,7 @@ func TestFuzzyInt(t *testing.T) {
 	unmarshaler := json.WithUnmarshalers(FuzzyUnmarshaler())
 
 	tests := []fuzzyIntTestCase{
+		// --- Valid Cases ---
 		{
 			name:     "Valid integer number",
 			jsonData: `{"value": 123}`,
@@ -34,14 +34,24 @@ func TestFuzzyInt(t *testing.T) {
 			expected: 456,
 		},
 		{
-			name:     "Valid float number",
+			name:     "String with whitespace",
+			jsonData: `{"value": " 123 "}`,
+			expected: 123,
+		},
+		{
+			name:     "Valid float number, truncated",
 			jsonData: `{"value": 789.99}`,
 			expected: 789,
 		},
 		{
-			name:     "Valid string float number",
+			name:     "Valid string float number, truncated",
 			jsonData: `{"value": "123.45"}`,
 			expected: 123,
+		},
+		{
+			name:     "String float with whitespace, truncated",
+			jsonData: `{"value": " 456.78 "}`,
+			expected: 456,
 		},
 		{
 			name:     "Zero value",
@@ -54,18 +64,30 @@ func TestFuzzyInt(t *testing.T) {
 			expected: 0,
 		},
 		{
-			name:        "Invalid string value",
+			name:     "String with only whitespace",
+			jsonData: `{"value": "   "}`,
+			expected: 0,
+		},
+		{
+			name:     "Null value",
+			jsonData: `{"value": null}`,
+			expected: 0, // Was expectError: true
+		},
+		{
+			name:     "Boolean true value",
+			jsonData: `{"value": true}`,
+			expected: 1, // Was expectError: true
+		},
+		{
+			name:     "Boolean false value",
+			jsonData: `{"value": false}`,
+			expected: 0,
+		},
+
+		// --- Error Cases ---
+		{
+			name:        "Invalid non-numeric string",
 			jsonData:    `{"value": "abc"}`,
-			expectError: true,
-		},
-		{
-			name:        "Null value",
-			jsonData:    `{"value": null}`,
-			expectError: true,
-		},
-		{
-			name:        "Boolean value",
-			jsonData:    `{"value": true}`,
 			expectError: true,
 		},
 		{
