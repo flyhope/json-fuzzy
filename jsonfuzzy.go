@@ -49,6 +49,6 @@ var DefaultOptions = sync.OnceValue(func() json.Options {
 	return json.JoinOptions(
 		jsontext.AllowDuplicateNames(true),
 		jsontext.AllowInvalidUTF8(true),
-		json.WithUnmarshalers(fuzzy),
+		fuzzy,
 	)
 })

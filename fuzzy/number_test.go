@@ -5,23 +5,24 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/exp/constraints"
 )
 
-type testFuzzyIntStruct struct {
-	Value int `json:"value"`
+type testFuzzyIntStruct[T constraints.Integer] struct {
+	Value T `json:"value"`
 }
 
-type fuzzyIntTestCase struct {
+type fuzzyIntTestCase[T constraints.Integer] struct {
 	name        string
 	jsonData    string
-	expected    int
+	expected    T
 	expectError bool
 }
 
 func TestFuzzyInt(t *testing.T) {
-	unmarshaler := json.WithUnmarshalers(FuzzyUnmarshaler())
+	unmarshaler := FuzzyUnmarshaler()
 
-	tests := []fuzzyIntTestCase{
+	tests := []fuzzyIntTestCase[int]{
 		// --- Valid Cases ---
 		{
 			name:     "Valid integer number",
@@ -104,7 +105,7 @@ func TestFuzzyInt(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var result testFuzzyIntStruct
+			var result testFuzzyIntStruct[int]
 			err := json.Unmarshal([]byte(tt.jsonData), &result, unmarshaler)
 
 			if tt.expectError {
