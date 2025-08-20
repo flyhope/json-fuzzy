@@ -22,6 +22,60 @@ func FuzzyInt(dec *jsontext.Decoder, t *int) error {
 	return fuzzyInteger(dec, t, strconv.ParseInt, 64)
 }
 
+// FuzzyInt8 is a custom JSON unmarshaler for the int8 type that provides fuzzy decoding.
+// See FuzzyInt for more details on the decoding behavior.
+func FuzzyInt8(dec *jsontext.Decoder, t *int8) error {
+	return fuzzyInteger(dec, t, strconv.ParseInt, 8)
+}
+
+// FuzzyInt16 is a custom JSON unmarshaler for the int16 type that provides fuzzy decoding.
+// See FuzzyInt for more details on the decoding behavior.
+func FuzzyInt16(dec *jsontext.Decoder, t *int16) error {
+	return fuzzyInteger(dec, t, strconv.ParseInt, 16)
+}
+
+// FuzzyInt32 is a custom JSON unmarshaler for the int32 type that provides fuzzy decoding.
+// See FuzzyInt for more details on the decoding behavior.
+func FuzzyInt32(dec *jsontext.Decoder, t *int32) error {
+	return fuzzyInteger(dec, t, strconv.ParseInt, 32)
+}
+
+// FuzzyInt64 is a custom JSON unmarshaler for the int64 type that provides fuzzy decoding.
+// See FuzzyInt for more details on the decoding behavior.
+func FuzzyInt64(dec *jsontext.Decoder, t *int64) error {
+	return fuzzyInteger(dec, t, strconv.ParseInt, 64)
+}
+
+// FuzzyUint is a custom JSON unmarshaler for the uint type that provides fuzzy decoding.
+// See FuzzyInt for more details on the decoding behavior.
+func FuzzyUint(dec *jsontext.Decoder, t *uint) error {
+	return fuzzyInteger(dec, t, strconv.ParseUint, 64)
+}
+
+// FuzzyUint8 is a custom JSON unmarshaler for the uint8 type that provides fuzzy decoding.
+// See FuzzyInt for more details on the decoding behavior.
+func FuzzyUint8(dec *jsontext.Decoder, t *uint8) error {
+	return fuzzyInteger(dec, t, strconv.ParseUint, 8)
+}
+
+// FuzzyUint16 is a custom JSON unmarshaler for the uint16 type that provides fuzzy decoding.
+// See FuzzyInt for more details on the decoding behavior.
+func FuzzyUint16(dec *jsontext.Decoder, t *uint16) error {
+	return fuzzyInteger(dec, t, strconv.ParseUint, 16)
+}
+
+// FuzzyUint32 is a custom JSON unmarshaler for the uint32 type that provides fuzzy decoding.
+// See FuzzyInt for more details on the decoding behavior.
+func FuzzyUint32(dec *jsontext.Decoder, t *uint32) error {
+	return fuzzyInteger(dec, t, strconv.ParseUint, 32)
+}
+
+// FuzzyUint64 is a custom JSON unmarshaler for the uint64 type that provides fuzzy decoding.
+// See FuzzyInt for more details on the decoding behavior.
+func FuzzyUint64(dec *jsontext.Decoder, t *uint64) error {
+	return fuzzyInteger(dec, t, strconv.ParseUint, 64)
+}
+
 // fuzzyInteger is a generic helper function that implements the core fuzzy decoding logic
 // for various integer types (int, int8, int32, int64, uint, etc.). It's designed to
 // be called by type-specific fuzzy decoders, such as FuzzyInt.
@@ -36,9 +90,9 @@ func FuzzyInt(dec *jsontext.Decoder, t *int) error {
 // Parameters:
 //   - dec: The jsontext.Decoder to read from.
 //   - t: A pointer to the target integer variable to store the decoded value.
-//   - method: The function used to parse the string representation of the number (e.g., strconv.ParseInt).
+//   - method: The function used to parse the string representation of the number (e.g., strconv.ParseInt or strconv.ParseUint).
 //   - bit: The bit size to be used by the parsing method.
-func fuzzyInteger[T constraints.Integer](dec *jsontext.Decoder, t *T, method func(s string, base int, bitSize int) (i int64, err error), bit int) error {
+func fuzzyInteger[T constraints.Integer](dec *jsontext.Decoder, t *T, method any, bit int) error {
 	kind := dec.PeekKind()
 
 	switch kind {
@@ -74,7 +128,7 @@ func fuzzyInteger[T constraints.Integer](dec *jsontext.Decoder, t *T, method fun
 		if kind == '"' {
 			s, err := strconv.Unquote(string(value))
 			if err != nil {
-				return fmt.Errorf("failed to unquote string for fuzzy int: %w", err)
+				return fmt.Errorf("failed to unquote string for fuzzy integer: %w", err)
 			}
 			valueString = s
 		} else {
@@ -94,15 +148,33 @@ func fuzzyInteger[T constraints.Integer](dec *jsontext.Decoder, t *T, method fun
 			return nil
 		}
 
-		if result, errAtoi := method(valueString, 10, bit); errAtoi != nil {
+		var result any
+		var errAtoi error
+		switch m := method.(type) {
+		case func(string, int, int) (int64, error):
+			result, errAtoi = m(valueString, 10, bit)
+		case func(string, int, int) (uint64, error):
+			result, errAtoi = m(valueString, 10, bit)
+		default:
+			return fmt.Errorf("unsupported parse function type")
+		}
+
+		if errAtoi != nil {
 			return errAtoi
-		} else {
-			*t = T(result)
+		}
+
+		switch r := result.(type) {
+		case int64:
+			*t = T(r)
+		case uint64:
+			*t = T(r)
+		default:
+			return fmt.Errorf("unsupported parse result type")
 		}
 
 		return nil
 
 	default:
-		return fmt.Errorf("fuzzy int must be a JSON string, number, boolean or null, got %v", kind)
+		return fmt.Errorf("fuzzy integer must be a JSON string, number, boolean or null, got %v", kind)
 	}
 }

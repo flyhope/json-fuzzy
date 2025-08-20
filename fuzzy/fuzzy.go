@@ -5,17 +5,19 @@ import (
 )
 
 func FuzzyUnmarshaler() json.Options {
-	return json.JoinOptions(
-		// integer
-		json.WithUnmarshalers(json.UnmarshalFromFunc(FuzzyInt)),
-		// json.WithUnmarshalers(json.UnmarshalFromFunc(FuzzyInteger[int64])),
-		// json.WithUnmarshalers(json.UnmarshalFromFunc(FuzzyInteger[int32])),
-		// json.WithUnmarshalers(json.UnmarshalFromFunc(FuzzyInteger[int16])),
-		// json.WithUnmarshalers(json.UnmarshalFromFunc(FuzzyInteger[int8])),
-		// json.WithUnmarshalers(json.UnmarshalFromFunc(FuzzyInteger[uint])),
-		// json.WithUnmarshalers(json.UnmarshalFromFunc(FuzzyInteger[uint64])),
-		// json.WithUnmarshalers(json.UnmarshalFromFunc(FuzzyInteger[uint32])),
-		// json.WithUnmarshalers(json.UnmarshalFromFunc(FuzzyInteger[uint16])),
-		// json.WithUnmarshalers(json.UnmarshalFromFunc(FuzzyInteger[uint8])),
+	return json.WithUnmarshalers(
+		// FuzzyInt and its variants for different integer types
+		json.JoinUnmarshalers(
+			json.UnmarshalFromFunc(FuzzyUint),
+			json.UnmarshalFromFunc(FuzzyUint64),
+			json.UnmarshalFromFunc(FuzzyUint32),
+			json.UnmarshalFromFunc(FuzzyUint16),
+			json.UnmarshalFromFunc(FuzzyUint8),
+			json.UnmarshalFromFunc(FuzzyInt),
+			json.UnmarshalFromFunc(FuzzyInt64),
+			json.UnmarshalFromFunc(FuzzyInt32),
+			json.UnmarshalFromFunc(FuzzyInt16),
+			json.UnmarshalFromFunc(FuzzyInt8),
+		),
 	)
 }
