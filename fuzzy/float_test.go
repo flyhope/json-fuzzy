@@ -1,7 +1,7 @@
 package fuzzy
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,12 +20,13 @@ func TestFuzzyFloat64(t *testing.T) {
 		{"null", "null", 0.0},
 	}
 
+	unmarshaler := FuzzyUnmarshaler()
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			var v struct {
-				F float64 `json:",decoder=FuzzyFloat64"`
+				F float64
 			}
-			err := json.Unmarshal([]byte(`{"F":`+tc.input+"}"), &v)
+			err := json.Unmarshal([]byte(`{"F":`+tc.input+"}"), &v, unmarshaler)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.want, v.F)
 		})
@@ -45,12 +46,13 @@ func TestFuzzyFloat32(t *testing.T) {
 		{"null", "null", 0.0},
 	}
 
+	unmarshaler := FuzzyUnmarshaler()
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			var v struct {
-				F float32 `json:",decoder=FuzzyFloat32"`
+				F float32
 			}
-			err := json.Unmarshal([]byte(`{"F":`+tc.input+"}"), &v)
+			err := json.Unmarshal([]byte(`{"F":`+tc.input+"}"), &v, unmarshaler)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.want, v.F)
 		})

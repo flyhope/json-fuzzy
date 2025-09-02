@@ -94,7 +94,6 @@ func FuzzyUint64(dec *jsontext.Decoder, t *uint64) error {
 //   - bit: The bit size to be used by the parsing method.
 func fuzzyInteger[T constraints.Integer](dec *jsontext.Decoder, t *T, method any, bit int) error {
 	kind := dec.PeekKind()
-
 	switch kind {
 	case 'n': // null
 		if err := dec.SkipValue(); err != nil {
@@ -115,66 +114,72 @@ func fuzzyInteger[T constraints.Integer](dec *jsontext.Decoder, t *T, method any
 		*t = 0
 		return nil
 	case '0', '"': // number or string
-		value, err := dec.ReadValue()
-		if err != nil {
-			return err
-		}
-		if len(value) == 0 {
-			*t = 0
-			return nil
-		}
-
-		var valueString string
-		if kind == '"' {
-			s, err := strconv.Unquote(string(value))
-			if err != nil {
-				return fmt.Errorf("failed to unquote string for fuzzy integer: %w", err)
-			}
-			valueString = s
-		} else {
-			valueString = string(value)
-		}
-
-		// Trim whitespace for string values.
-		valueString = strings.TrimSpace(valueString)
-
-		// If there is a decimal point, truncate the fractional part.
-		if pointIndex := strings.IndexByte(valueString, '.'); pointIndex >= 0 {
-			valueString = valueString[:pointIndex]
-		}
-
-		if valueString == "" {
-			*t = 0
-			return nil
-		}
-
-		var result any
-		var errAtoi error
-		switch m := method.(type) {
+		switch method.(type) {
 		case func(string, int, int) (int64, error):
-			result, errAtoi = m(valueString, 10, bit)
+			result, err := parseInt64(kind, dec)
+			if err != nil {
+				return err
+			}
+			*t = T(result)
 		case func(string, int, int) (uint64, error):
-			result, errAtoi = m(valueString, 10, bit)
+			result, err := parseUint64(kind, dec)
+			if err != nil {
+				return err
+			}
+			*t = T(result)
 		default:
 			return fmt.Errorf("unsupported parse function type")
 		}
-
-		if errAtoi != nil {
-			return errAtoi
-		}
-
-		switch r := result.(type) {
-		case int64:
-			*t = T(r)
-		case uint64:
-			*t = T(r)
-		default:
-			return fmt.Errorf("unsupported parse result type")
-		}
-
 		return nil
-
 	default:
 		return fmt.Errorf("fuzzy integer must be a JSON string, number, boolean or null, got %v", kind)
 	}
+}
+
+// parseInt64 parses a JSON value into an int64. It handles both JSON numbers
+// and strings, including those with decimal parts (which are truncated).
+func parseInt64(kind jsontext.Kind, dec *jsontext.Decoder) (int64, error) {
+	valueString, err := parseNumberString(kind, dec)
+	if err != nil || valueString == "" {
+		return 0, err
+	}
+	return strconv.ParseInt(valueString, 10, 64)
+}
+
+// parseUint64 parses a JSON value into a uint64. It handles both JSON numbers
+// and strings, including those with decimal parts (which are truncated).
+func parseUint64(kind jsontext.Kind, dec *jsontext.Decoder) (uint64, error) {
+	valueString, err := parseNumberString(kind, dec)
+	if err != nil || valueString == "" {
+		return 0, err
+	}
+	return strconv.ParseUint(valueString, 10, 64)
+}
+
+// parseNumberString reads a JSON value (string or number) and returns a string
+// representation suitable for parsing into an integer. It handles unquoting strings,
+// trimming whitespace, and truncating float-like strings at the decimal point.
+func parseNumberString(kind jsontext.Kind, dec *jsontext.Decoder) (string, error) {
+	value, err := dec.ReadValue()
+	if err != nil {
+		return "", err
+	}
+	if len(value) == 0 {
+		return "", nil
+	}
+	var valueString string
+	if kind == '"' {
+		s, err := strconv.Unquote(string(value))
+		if err != nil {
+			return "", fmt.Errorf("failed to unquote string for fuzzy integer: %w", err)
+		}
+		valueString = s
+	} else {
+		valueString = string(value)
+	}
+	valueString = strings.TrimSpace(valueString)
+	if pointIndex := strings.IndexByte(valueString, '.'); pointIndex >= 0 {
+		valueString = valueString[:pointIndex]
+	}
+	return valueString, nil
 }
