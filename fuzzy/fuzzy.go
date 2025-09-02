@@ -25,7 +25,8 @@ var FuzzyUnmarshaler = sync.OnceValue(func() json.Options {
 			// float
 			json.UnmarshalFromFunc(FuzzyFloat32),
 			json.UnmarshalFromFunc(FuzzyFloat64),
-			// any
+			// any (support custom type)
+			json.UnmarshalFromFunc(FuzzyAny),
 		),
 	)
 })

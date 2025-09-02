@@ -335,3 +335,17 @@ func TestFuzzyUint64(t *testing.T) {
 	)
 	runFuzzyIntTests(t, tests)
 }
+
+type testNumber int64
+
+func TestFuzzyCustomInt64(t *testing.T) {
+	tests := getCommonTestCases[testNumber](9223372036854775807, "9223372036854775807", "9223372036854775000.99", 9223372036854775000)
+	tests = append(tests,
+		fuzzyTestCase[testNumber]{
+			name:        "Overflow string integer",
+			jsonData:    `{"value": "9223372036854775808"}`,
+			expectError: true,
+		},
+	)
+	runFuzzyIntTests(t, tests)
+}
