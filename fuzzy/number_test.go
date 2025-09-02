@@ -124,6 +124,30 @@ func getCommonTestCases[T constraints.Integer](
 	}
 }
 
+func testToInt8(v int) int8 {
+	return int8(v)
+}
+
+func testToInt16(v int) int16 {
+	return int16(v)
+}
+
+func testToInt32(v int64) int32 {
+	return int32(v)
+}
+
+func testToUint8(v int) uint8 {
+	return uint8(v)
+}
+
+func testToUint16(v int) uint16 {
+	return uint16(v)
+}
+
+func testToUint32(v int64) uint32 {
+	return uint32(v)
+}
+
 func TestFuzzyInt(t *testing.T) {
 	tests := getCommonTestCases[int](123, "123", "123.99", 123)
 	runFuzzyIntTests(t, tests)
@@ -133,14 +157,14 @@ func TestFuzzyInt8(t *testing.T) {
 	tests := getCommonTestCases[int8](127, "127", "127.99", 127)
 	tests = append(tests,
 		fuzzyTestCase[int8]{
-			name:        "Overflow integer",
-			jsonData:    `{"value": 128}`,
-			expectError: true,
+			name:     "Overflow integer",
+			jsonData: `{"value": 128}`,
+			expected: testToInt8(128),
 		},
 		fuzzyTestCase[int8]{
-			name:        "Overflow string integer",
-			jsonData:    `{"value": "128"}`,
-			expectError: true,
+			name:     "Overflow string integer",
+			jsonData: `{"value": "128"}`,
+			expected: testToInt8(128),
 		},
 	)
 	runFuzzyIntTests(t, tests)
@@ -150,14 +174,14 @@ func TestFuzzyInt16(t *testing.T) {
 	tests := getCommonTestCases[int16](32767, "32767", "32767.99", 32767)
 	tests = append(tests,
 		fuzzyTestCase[int16]{
-			name:        "Overflow integer",
-			jsonData:    `{"value": 32768}`,
-			expectError: true,
+			name:     "Overflow integer",
+			jsonData: `{"value": 32768}`,
+			expected: testToInt16(32768),
 		},
 		fuzzyTestCase[int16]{
-			name:        "Overflow string integer",
-			jsonData:    `{"value": "32768"}`,
-			expectError: true,
+			name:     "Overflow string integer",
+			jsonData: `{"value": "32768"}`,
+			expected: testToInt16(32768),
 		},
 	)
 	runFuzzyIntTests(t, tests)
@@ -167,14 +191,14 @@ func TestFuzzyInt32(t *testing.T) {
 	tests := getCommonTestCases[int32](2147483647, "2147483647", "2147483647.99", 2147483647)
 	tests = append(tests,
 		fuzzyTestCase[int32]{
-			name:        "Overflow integer",
-			jsonData:    `{"value": 2147483648}`,
-			expectError: true,
+			name:     "Overflow integer",
+			jsonData: `{"value": 2147483648}`,
+			expected: testToInt32(2147483648),
 		},
 		fuzzyTestCase[int32]{
-			name:        "Overflow string integer",
-			jsonData:    `{"value": "2147483648"}`,
-			expectError: true,
+			name:     "Overflow string integer",
+			jsonData: `{"value": "2147483648"}`,
+			expected: testToInt32(2147483648),
 		},
 	)
 	runFuzzyIntTests(t, tests)
@@ -213,14 +237,14 @@ func TestFuzzyUint8(t *testing.T) {
 	tests := getCommonTestCases[uint8](255, "255", "255.99", 255)
 	tests = append(tests,
 		fuzzyTestCase[uint8]{
-			name:        "Overflow integer",
-			jsonData:    `{"value": 256}`,
-			expectError: true,
+			name:     "Overflow integer",
+			jsonData: `{"value": 256}`,
+			expected: testToUint8(256),
 		},
 		fuzzyTestCase[uint8]{
-			name:        "Overflow string integer",
-			jsonData:    `{"value": "256"}`,
-			expectError: true,
+			name:     "Overflow string integer",
+			jsonData: `{"value": "256"}`,
+			expected: testToUint8(256),
 		},
 		fuzzyTestCase[uint8]{
 			name:        "Negative integer",
@@ -240,14 +264,14 @@ func TestFuzzyUint16(t *testing.T) {
 	tests := getCommonTestCases[uint16](65535, "65535", "65535.99", 65535)
 	tests = append(tests,
 		fuzzyTestCase[uint16]{
-			name:        "Overflow integer",
-			jsonData:    `{"value": 65536}`,
-			expectError: true,
+			name:     "Overflow integer",
+			jsonData: `{"value": 65536}`,
+			expected: testToUint16(65536),
 		},
 		fuzzyTestCase[uint16]{
-			name:        "Overflow string integer",
-			jsonData:    `{"value": "65536"}`,
-			expectError: true,
+			name:     "Overflow string integer",
+			jsonData: `{"value": "65536"}`,
+			expected: testToUint16(65536),
 		},
 		fuzzyTestCase[uint16]{
 			name:        "Negative integer",
@@ -267,14 +291,14 @@ func TestFuzzyUint32(t *testing.T) {
 	tests := getCommonTestCases[uint32](4294967295, "4294967295", "4294967295.99", 4294967295)
 	tests = append(tests,
 		fuzzyTestCase[uint32]{
-			name:        "Overflow integer",
-			jsonData:    `{"value": 4294967296}`,
-			expectError: true,
+			name:     "Overflow integer",
+			jsonData: `{"value": 4294967296}`,
+			expected: testToUint32(4294967296),
 		},
 		fuzzyTestCase[uint32]{
-			name:        "Overflow string integer",
-			jsonData:    `{"value": "4294967296"}`,
-			expectError: true,
+			name:     "Overflow string integer",
+			jsonData: `{"value": "4294967296"}`,
+			expected: testToUint32(4294967296),
 		},
 		fuzzyTestCase[uint32]{
 			name:        "Negative integer",
