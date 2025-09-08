@@ -19,7 +19,8 @@ func TestFuzzyString(t *testing.T) {
 		{"true", "true", "true"},
 		{"false", "false", "false"},
 		{"null", "null", ""},
-		// @todo \uxxx，\n
+		{`string with newline`, `"hello\nworld"`, "hello\nworld"},
+		{`string with unicode escape`, `"hello\u0026world"`, "hello&world"},
 	}
 
 	unmarshaler := FuzzyUnmarshaler()
@@ -35,25 +36,27 @@ func TestFuzzyString(t *testing.T) {
 	}
 }
 
-// type fuzzyTestTypeString string
+type testTypeString string
 
-// func TestFuzzyTypeString(t *testing.T) {
-// 	testCases := []fuzzyTestCaseString[fuzzyTestTypeString]{
-// 		{"string", `"hello"`, "hello"},
-// 		{"true", "true", "true"},
-// 		{"false", "false", "false"},
-// 		{"null", "null", ""},
-// 	}
+func TestFuzzyTypeString(t *testing.T) {
+	testCases := []fuzzyTestCaseString[testTypeString]{
+		{"string", `"hello"`, "hello"},
+		{"true", "true", "true"},
+		{"false", "false", "false"},
+		{"null", "null", ""},
+		{`string with newline`, `"hello\nworld"`, "hello\nworld"},
+		{`string with unicode escape`, `"hello\u0026world"`, "hello&world"},
+	}
 
-// 	unmarshaler := FuzzyUnmarshaler()
-// 	for _, tc := range testCases {
-// 		t.Run(tc.name, func(t *testing.T) {
-// 			var v struct {
-// 				S fuzzyTestTypeString
-// 			}
-// 			err := json.Unmarshal([]byte(`{"S":`+tc.input+"}"), &v, unmarshaler)
-// 			assert.NoError(t, err)
-// 			assert.Equal(t, tc.want, v.S)
-// 		})
-// 	}
-// }
+	unmarshaler := FuzzyUnmarshaler()
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var v struct {
+				S testTypeString
+			}
+			err := json.Unmarshal([]byte(`{"S":`+tc.input+"}"), &v, unmarshaler)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.want, v.S)
+		})
+	}
+}

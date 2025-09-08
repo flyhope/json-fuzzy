@@ -2,8 +2,8 @@ package fuzzy
 
 import (
 	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
-	"strconv"
 )
 
 // FuzzyString is a custom JSON unmarshaler for the string type that provides fuzzy decoding.
@@ -14,46 +14,33 @@ import (
 //   - JSON numbers (e.g., 123, 45.67) are converted to their string representation.
 //   - JSON booleans are decoded as "true" or "false".
 //   - JSON null is decoded as an empty string "".
-func FuzzyString[T ~string](dec *jsontext.Decoder, t *T) error {
+func FuzzyString(dec *jsontext.Decoder, t *string) error {
+	result, err := showStringValue(dec)
+	if err != nil {
+		return err
+	}
+	*t = result
+	return nil
+}
+
+func showStringValue(dec *jsontext.Decoder) (string, error) {
 	kind := dec.PeekKind()
 	switch kind {
 	case 'n': // null
-		if err := dec.SkipValue(); err != nil {
-			return err
-		}
-		*t = ""
-		return nil
+		err := dec.SkipValue()
+		return "", err
 	case 't': // true
-		if err := dec.SkipValue(); err != nil {
-			return err
-		}
-		*t = "true"
-		return nil
+		err := dec.SkipValue()
+		return "true", err
 	case 'f': // false
-		if err := dec.SkipValue(); err != nil {
-			return err
-		}
-		*t = "false"
-		return nil
+		err := dec.SkipValue()
+		return "false", err
 	case '"': // string
-		val, err := dec.ReadValue()
-		if err != nil {
-			return err
-		}
-		s, err := strconv.Unquote(string(val))
-		if err != nil {
-			return err
-		}
-		*t = T(s)
-		return nil
+		return "", json.SkipFunc
 	case '0': // number
 		val, err := dec.ReadValue()
-		if err != nil {
-			return err
-		}
-		*t = T(val)
-		return nil
+		return string(val), err
 	default:
-		return fmt.Errorf("fuzzy string must be a JSON string, number, boolean or null, got %v", kind)
+		return "", fmt.Errorf("fuzzy string must be a JSON string, number, boolean or null, got %v", kind)
 	}
 }

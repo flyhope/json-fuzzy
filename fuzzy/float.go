@@ -98,3 +98,7 @@ func fuzzyFloat[T constraints.Float](dec *jsontext.Decoder, t *T, bit int) error
 		return fmt.Errorf("fuzzy float must be a JSON string, number, boolean or null, got %v", kind)
 	}
 }
+
+// func showFloatByPeek[T constraints.Float](dec *jsontext.Decoder) (T, jsontext.Kind, bool, error) {
+// 	// @todo
+// }

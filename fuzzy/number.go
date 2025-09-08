@@ -117,6 +117,17 @@ func fuzzyInteger[T constraints.Integer](dec *jsontext.Decoder, t *T, signed boo
 	return nil
 }
 
+// showIntegerByPeek attempts to decode an integer value by peeking at the next JSON token.
+// It handles simple cases like null, false, and true directly.
+// For numbers and strings, it returns ok=false, indicating that the caller should perform the full parsing.
+//
+// This function is a preliminary check to quickly handle non-numeric types without reading the full value.
+//
+// It returns:
+// - The decoded integer value (T).
+// - The kind of the peeked JSON token (jsontext.Kind).
+// - A boolean `ok` which is true if the value was successfully decoded, and false otherwise.
+// - An error if the token is invalid or if skipping the value fails.
 func showIntegerByPeek[T constraints.Integer](dec *jsontext.Decoder) (T, jsontext.Kind, bool, error) {
 	kind := dec.PeekKind()
 	switch kind {

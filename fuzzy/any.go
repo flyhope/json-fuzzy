@@ -58,6 +58,32 @@ func FuzzyAny(dec *jsontext.Decoder, t any) error {
 		}
 		elemV.SetUint(result)
 
+	// parse string
+	case reflect.String:
+		result, err := showStringValue(dec)
+		if err != nil {
+			return err
+		}
+
+		elemV := reflect.ValueOf(t).Elem()
+		if !elemV.CanSet() {
+			return json.SkipFunc
+		}
+		elemV.SetString(result)
+
+	// parse bool
+	case reflect.Bool:
+		result, err := parseBool(dec)
+		if err != nil {
+			return err
+		}
+
+		elemV := reflect.ValueOf(t).Elem()
+		if !elemV.CanSet() {
+			return json.SkipFunc
+		}
+		elemV.SetBool(result)
+
 	default:
 		return json.SkipFunc
 	}

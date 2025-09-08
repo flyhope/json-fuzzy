@@ -20,13 +20,11 @@ type fuzzyTestCase[T constraints.Integer] struct {
 	expectError bool
 }
 
-func runFuzzyIntTests[T constraints.Integer](t *testing.T, tests []fuzzyTestCase[T]) {
-	unmarshaler := FuzzyUnmarshaler()
-
+func runFuzzyIntTestCases[T constraints.Integer](t *testing.T, tests []fuzzyTestCase[T], opts ...json.Options) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var result testFuzzyIntStruct[T]
-			err := json.Unmarshal([]byte(tt.jsonData), &result, unmarshaler)
+			err := json.Unmarshal([]byte(tt.jsonData), &result, opts...)
 
 			if tt.expectError {
 				assert.Error(t, err, fmt.Sprintf("Expected an error for test case: %s", tt.name))
@@ -36,6 +34,16 @@ func runFuzzyIntTests[T constraints.Integer](t *testing.T, tests []fuzzyTestCase
 			}
 		})
 	}
+}
+
+func runFuzzyIntTests[T constraints.Integer](t *testing.T, tests []fuzzyTestCase[T]) {
+	unmarshaler := FuzzyUnmarshalerOrigin()
+	runFuzzyIntTestCases(t, tests, unmarshaler)
+}
+
+func runFuzzyIntFullTests[T constraints.Integer](t *testing.T, tests []fuzzyTestCase[T]) {
+	unmarshaler := FuzzyUnmarshalerFull()
+	runFuzzyIntTestCases(t, tests, unmarshaler)
 }
 
 func getCommonTestCases[T constraints.Integer](
@@ -336,16 +344,210 @@ func TestFuzzyUint64(t *testing.T) {
 	runFuzzyIntTests(t, tests)
 }
 
-type testNumber int64
+type testTypeInt64 int64
 
 func TestFuzzyCustomInt64(t *testing.T) {
-	tests := getCommonTestCases[testNumber](9223372036854775807, "9223372036854775807", "9223372036854775000.99", 9223372036854775000)
+	tests := getCommonTestCases[testTypeInt64](9223372036854775807, "9223372036854775807", "9223372036854775000.99", 9223372036854775000)
 	tests = append(tests,
-		fuzzyTestCase[testNumber]{
+		fuzzyTestCase[testTypeInt64]{
 			name:        "Overflow string integer",
 			jsonData:    `{"value": "9223372036854775808"}`,
 			expectError: true,
 		},
 	)
-	runFuzzyIntTests(t, tests)
+	runFuzzyIntFullTests(t, tests)
+}
+
+type testTypeInt int
+
+func TestFuzzyCustomInt(t *testing.T) {
+	tests := getCommonTestCases[testTypeInt](123, "123", "123.99", 123)
+	runFuzzyIntFullTests(t, tests)
+}
+
+type testTypeInt8 int8
+
+func TestFuzzyCustomInt8(t *testing.T) {
+	tests := getCommonTestCases[testTypeInt8](127, "127", "127.99", 127)
+	tests = append(tests,
+		fuzzyTestCase[testTypeInt8]{
+			name:     "Overflow integer",
+			jsonData: `{"value": 128}`,
+			expected: testTypeInt8(testToInt8(128)),
+		},
+		fuzzyTestCase[testTypeInt8]{
+			name:     "Overflow string integer",
+			jsonData: `{"value": "128"}`,
+			expected: testTypeInt8(testToInt8(128)),
+		},
+	)
+	runFuzzyIntFullTests(t, tests)
+}
+
+type testTypeInt16 int16
+
+func TestFuzzyCustomInt16(t *testing.T) {
+	tests := getCommonTestCases[testTypeInt16](32767, "32767", "32767.99", 32767)
+	tests = append(tests,
+		fuzzyTestCase[testTypeInt16]{
+			name:     "Overflow integer",
+			jsonData: `{"value": 32768}`,
+			expected: testTypeInt16(testToInt16(32768)),
+		},
+		fuzzyTestCase[testTypeInt16]{
+			name:     "Overflow string integer",
+			jsonData: `{"value": "32768"}`,
+			expected: testTypeInt16(testToInt16(32768)),
+		},
+	)
+	runFuzzyIntFullTests(t, tests)
+}
+
+type testTypeInt32 int32
+
+func TestFuzzyCustomInt32(t *testing.T) {
+	tests := getCommonTestCases[testTypeInt32](2147483647, "2147483647", "2147483647.99", 2147483647)
+	tests = append(tests,
+		fuzzyTestCase[testTypeInt32]{
+			name:     "Overflow integer",
+			jsonData: `{"value": 2147483648}`,
+			expected: testTypeInt32(testToInt32(2147483648)),
+		},
+		fuzzyTestCase[testTypeInt32]{
+			name:     "Overflow string integer",
+			jsonData: `{"value": "2147483648"}`,
+			expected: testTypeInt32(testToInt32(2147483648)),
+		},
+	)
+	runFuzzyIntFullTests(t, tests)
+}
+
+type testTypeUint uint
+
+func TestFuzzyCustomUint(t *testing.T) {
+	tests := getCommonTestCases[testTypeUint](123, "123", "123.99", 123)
+	tests = append(tests,
+		fuzzyTestCase[testTypeUint]{
+			name:        "Negative integer",
+			jsonData:    `{"value": -1}`,
+			expectError: true,
+		},
+		fuzzyTestCase[testTypeUint]{
+			name:        "Negative string integer",
+			jsonData:    `{"value": "-1"}`,
+			expectError: true,
+		},
+	)
+	runFuzzyIntFullTests(t, tests)
+}
+
+type testTypeUint8 uint8
+
+func TestFuzzyCustomUint8(t *testing.T) {
+	tests := getCommonTestCases[testTypeUint8](255, "255", "255.99", 255)
+	tests = append(tests,
+		fuzzyTestCase[testTypeUint8]{
+			name:     "Overflow integer",
+			jsonData: `{"value": 256}`,
+			expected: testTypeUint8(testToUint8(256)),
+		},
+		fuzzyTestCase[testTypeUint8]{
+			name:     "Overflow string integer",
+			jsonData: `{"value": "256"}`,
+			expected: testTypeUint8(testToUint8(256)),
+		},
+		fuzzyTestCase[testTypeUint8]{
+			name:        "Negative integer",
+			jsonData:    `{"value": -1}`,
+			expectError: true,
+		},
+		fuzzyTestCase[testTypeUint8]{
+			name:        "Negative string integer",
+			jsonData:    `{"value": "-1"}`,
+			expectError: true,
+		},
+	)
+	runFuzzyIntFullTests(t, tests)
+}
+
+type testTypeUint16 uint16
+
+func TestFuzzyCustomUint16(t *testing.T) {
+	tests := getCommonTestCases[testTypeUint16](65535, "65535", "65535.99", 65535)
+	tests = append(tests,
+		fuzzyTestCase[testTypeUint16]{
+			name:     "Overflow integer",
+			jsonData: `{"value": 65536}`,
+			expected: testTypeUint16(testToUint16(65536)),
+		},
+		fuzzyTestCase[testTypeUint16]{
+			name:     "Overflow string integer",
+			jsonData: `{"value": "65536"}`,
+			expected: testTypeUint16(testToUint16(65536)),
+		},
+		fuzzyTestCase[testTypeUint16]{
+			name:        "Negative integer",
+			jsonData:    `{"value": -1}`,
+			expectError: true,
+		},
+		fuzzyTestCase[testTypeUint16]{
+			name:        "Negative string integer",
+			jsonData:    `{"value": "-1"}`,
+			expectError: true,
+		},
+	)
+	runFuzzyIntFullTests(t, tests)
+}
+
+type testTypeUint32 uint32
+
+func TestFuzzyCustomUint32(t *testing.T) {
+	tests := getCommonTestCases[testTypeUint32](4294967295, "4294967295", "4294967295.99", 4294967295)
+	tests = append(tests,
+		fuzzyTestCase[testTypeUint32]{
+			name:     "Overflow integer",
+			jsonData: `{"value": 4294967296}`,
+			expected: testTypeUint32(testToUint32(4294967296)),
+		},
+		fuzzyTestCase[testTypeUint32]{
+			name:     "Overflow string integer",
+			jsonData: `{"value": "4294967296"}`,
+			expected: testTypeUint32(testToUint32(4294967296)),
+		},
+		fuzzyTestCase[testTypeUint32]{
+			name:        "Negative integer",
+			jsonData:    `{"value": -1}`,
+			expectError: true,
+		},
+		fuzzyTestCase[testTypeUint32]{
+			name:        "Negative string integer",
+			jsonData:    `{"value": "-1"}`,
+			expectError: true,
+		},
+	)
+	runFuzzyIntFullTests(t, tests)
+}
+
+type testTypeUint64 uint64
+
+func TestFuzzyCustomUint64(t *testing.T) {
+	tests := getCommonTestCases[testTypeUint64](18446744073709551615, "18446744073709551615", "18446744073709551000.99", 18446744073709551000)
+	tests = append(tests,
+		fuzzyTestCase[testTypeUint64]{
+			name:        "Overflow string integer",
+			jsonData:    `{"value": "18446744073709551616"}`,
+			expectError: true,
+		},
+		fuzzyTestCase[testTypeUint64]{
+			name:        "Negative integer",
+			jsonData:    `{"value": -1}`,
+			expectError: true,
+		},
+		fuzzyTestCase[testTypeUint64]{
+			name:        "Negative string integer",
+			jsonData:    `{"value": "-1"}`,
+			expectError: true,
+		},
+	)
+	runFuzzyIntFullTests(t, tests)
 }
