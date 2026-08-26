@@ -2,7 +2,7 @@ package fuzzy
 
 import (
 	"encoding/json/jsontext"
-	"encoding/json/v2"
+	"errors"
 	"reflect"
 )
 
@@ -10,7 +10,7 @@ func FuzzyAny(dec *jsontext.Decoder, t any) error {
 	// only support ptr
 	typ := reflect.TypeOf(t)
 	if typ.Kind() != reflect.Ptr {
-		return json.SkipFunc
+		return errors.ErrUnsupported
 	}
 
 	elem := typ.Elem()
@@ -20,7 +20,7 @@ func FuzzyAny(dec *jsontext.Decoder, t any) error {
 	case reflect.Int, reflect.Int64, reflect.Int32, reflect.Int16, reflect.Int8:
 		elemV := reflect.ValueOf(t).Elem()
 		if !elemV.CanSet() {
-			return json.SkipFunc
+			return errors.ErrUnsupported
 		}
 
 		v, kind, ok, err := showIntegerByPeek[int64](dec)
@@ -41,7 +41,7 @@ func FuzzyAny(dec *jsontext.Decoder, t any) error {
 	case reflect.Uint, reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8:
 		elemV := reflect.ValueOf(t).Elem()
 		if !elemV.CanSet() {
-			return json.SkipFunc
+			return errors.ErrUnsupported
 		}
 
 		v, kind, ok, err := showIntegerByPeek[uint64](dec)
@@ -67,7 +67,7 @@ func FuzzyAny(dec *jsontext.Decoder, t any) error {
 
 		elemV := reflect.ValueOf(t).Elem()
 		if !elemV.CanSet() {
-			return json.SkipFunc
+			return errors.ErrUnsupported
 		}
 		elemV.SetString(result)
 
@@ -80,12 +80,12 @@ func FuzzyAny(dec *jsontext.Decoder, t any) error {
 
 		elemV := reflect.ValueOf(t).Elem()
 		if !elemV.CanSet() {
-			return json.SkipFunc
+			return errors.ErrUnsupported
 		}
 		elemV.SetBool(result)
 
 	default:
-		return json.SkipFunc
+		return errors.ErrUnsupported
 	}
 
 	return nil
