@@ -1,14 +1,10 @@
 module github.com/flyhope/json-fuzzy
 
-go 1.25.0
+go 1.27.0
 
 require (
-	github.com/stretchr/testify v1.10.0
-	golang.org/x/exp v0.0.0-20250813145105-42675adae3e6
+	github.com/stretchr/testify v1.12.1
+	golang.org/x/exp v0.0.0-20260824195058-e88cd73687aa
 )
 
-require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
-)
+require go.yaml.in/yaml/v3 v3.0.5 // indirect

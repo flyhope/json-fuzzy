@@ -11,9 +11,6 @@
       "args": [
 
       ],
-      "env": {
-        "GOEXPERIMENT": "jsonv2"
-      },
       "showLog": true
     }
   ]

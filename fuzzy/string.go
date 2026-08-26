@@ -2,7 +2,7 @@ package fuzzy
 
 import (
 	"encoding/json/jsontext"
-	"encoding/json/v2"
+	"errors"
 	"fmt"
 )
 
@@ -36,7 +36,7 @@ func showStringValue(dec *jsontext.Decoder) (string, error) {
 		err := dec.SkipValue()
 		return "false", err
 	case '"': // string
-		return "", json.SkipFunc
+		return "", errors.ErrUnsupported
 	case '0': // number
 		val, err := dec.ReadValue()
 		return string(val), err
