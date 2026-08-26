@@ -9,7 +9,7 @@ import (
 func FuzzyAny(dec *jsontext.Decoder, t any) error {
 	// only support ptr
 	typ := reflect.TypeOf(t)
-	if typ.Kind() != reflect.Ptr {
+	if typ.Kind() != reflect.Pointer {
 		return errors.ErrUnsupported
 	}
 
